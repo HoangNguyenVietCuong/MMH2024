@@ -16,9 +16,17 @@ import entity.Supplier;
 import entity.Category;
 import entity.Invoice;
 import entity.Product;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.PrivateKey;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -235,7 +243,8 @@ public class DAO {
                         rs.getString(3),
                         rs.getInt(4),
                         rs.getInt(5),
-                		rs.getString(6)));
+                		rs.getString(6),
+                		rs.getInt(7)));
             }
         } catch (Exception e) {
         }
@@ -1099,7 +1108,8 @@ public class DAO {
                         rs.getString(3),
                         rs.getInt(4),
                         rs.getInt(5),
-                		rs.getString(6));
+                		rs.getString(6),
+                		rs.getInt(7));
             }
         } catch (Exception e) {
         }
@@ -1120,7 +1130,8 @@ public class DAO {
                         rs.getString(3),
                         rs.getInt(4),
                         rs.getInt(5),
-                		rs.getString(6));
+                		rs.getString(6),
+                		rs.getInt(7));
             }
         } catch (Exception e) {
         }
@@ -1141,7 +1152,8 @@ public class DAO {
                         rs.getString(3),
                         rs.getInt(4),
                         rs.getInt(5),
-                		rs.getString(6));
+                		rs.getString(6),
+                		rs.getInt(7));
             }
         } catch (Exception e) {
         }
@@ -1169,15 +1181,16 @@ public class DAO {
         return null;
     }
 
-    public void singup(String user, String pass, String email) {
+    public void singup(String user, String pass, String email,int keyId) {
         String query = "insert into Account\n"
-                + "values(?,?,0,0,?)";
+                + "values(?,?,0,0,?,?)";
         try {
             conn = new DBContext().getConnection();//mo ket noi voi sql
             ps = conn.prepareStatement(query);
             ps.setString(1, user);
             ps.setString(2, pass);
             ps.setString(3, email);
+            ps.setInt(4, keyId);
             ps.executeUpdate();
         } catch (Exception e) {
         }
@@ -1584,12 +1597,75 @@ public class DAO {
         } catch (Exception e) {
         }
     }
+    public int savePublicKey(String publicKey) {
+        String sql = "INSERT INTO Keys (pkey, date) VALUES (?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, publicKey);
+            ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1); // Trả về key_id
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1; 
+    }
+
+    public String getPublicKeyByKeyId(int keyId) {
+        String query = "SELECT pkey FROM Keys WHERE keyid = ?";
+        
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            
+            ps.setInt(1, keyId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                	System.out.println(keyId);
+                	System.out.println(rs.getString("pkey"));
+                    return rs.getString("pkey");
+                    
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("get key ko thanh cong");
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("get key ko thanh cong");
+        return null;
+    }
+    public static String savePrivateKey(PrivateKey privateKey) throws Exception {
+        // Create a temporary directory
+        Path tempDir = Files.createTempDirectory("user-private-key-");
+
+        // Define the file name (e.g., private-key.key)
+        String filename = "private-key.key";
+
+        // Full file path
+        File file = new File(tempDir.toFile(), filename);
+        
+        // Save the private key to the file
+        try (FileOutputStream fos = new FileOutputStream(file);
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(privateKey);
+        }
+
+        // Return the absolute file path to be used for email attachment
+        return file.getAbsolutePath();
+    }
+
 
    public static void main(String[] args) {
         DAO dao = new DAO();
 //        List<Review> list = 
-//        	dao.insertProduct("Giày Bóng Đá Nam Bitis Hunter Football","https://product.hstatic.net/1000230642/product/02400vag__1__5d559f914caf4864ad99a37c18cc1a1b_1024x1024.jpg",
-//        					"535","Giày Bóng Đá Nam Biti Hunter Football","Với thiết kế năng động, Giày bóng đá Biti’s Hunter được tung ra với 5 màu sắc nổi bật tạo điểm nhấn trên sân đấu.",
+//        	dao.insertProduct("GiÃ y BÃ³ng Ä�Ã¡ Nam Bitis Hunter Football","https://product.hstatic.net/1000230642/product/02400vag__1__5d559f914caf4864ad99a37c18cc1a1b_1024x1024.jpg",
+//        					"535","GiÃ y BÃ³ng Ä�Ã¡ Nam Biti Hunter Football","Vá»›i thiáº¿t káº¿ nÄƒng Ä‘á»™ng, GiÃ y bÃ³ng Ä‘Ã¡ Bitiâ€™s Hunter Ä‘Æ°á»£c tung ra vá»›i 5 mÃ u sáº¯c ná»•i báº­t táº¡o Ä‘iá»ƒm nháº¥n trÃªn sÃ¢n Ä‘áº¥u.",
 //        					"3",1,"G39","Yellow","Ho Chi Minh","https://product.hstatic.net/1000230642/product/02400vag__3__3a83e45335054285a27fba37cafb23c1_1024x1024.jpg",
 //        					"https://product.hstatic.net/1000230642/product/02400vag__4__d3693ef3babe4fc3a2908d8eb2df6e3b_1024x1024.jpg","https://product.hstatic.net/1000230642/product/02400vag__4__d3693ef3babe4fc3a2908d8eb2df6e3b_1024x1024.jpg");
 //        dao.editProduct("Giay chay du lich 2","https://giaygiare.vn/upload/sanpham/nike-sb-dunk-low-eire-net-deep-orange.jpg","301","title 3",

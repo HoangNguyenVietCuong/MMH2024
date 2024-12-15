@@ -58,6 +58,7 @@ public class LoginControl extends HttpServlet {
          String username = request.getParameter("user");
          String password = request.getParameter("pass");
          String remember =request.getParameter("remember");
+
          
          DAO dao = new DAO();
          Account a = dao.login(username, password);
@@ -66,7 +67,11 @@ public class LoginControl extends HttpServlet {
              request.getRequestDispatcher("Login.jsp").forward(request, response);
          } else {
              HttpSession session = request.getSession();
+             int keyid = a.getKeyId();
+
              session.setAttribute("acc", a);
+             String publicKey = dao.getPublicKeyByKeyId(keyid);
+             session.setAttribute("publicKey", publicKey);
              session.setMaxInactiveInterval(60*60*24);
            //luu account len tren cookie
              Cookie u = new Cookie("userC", username);

@@ -1,15 +1,19 @@
 package entity;
 
 
+import java.io.File;
 import java.util.Properties;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
+import javax.mail.Multipart;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 import entity.Email;
 
@@ -30,11 +34,21 @@ public class EmailUtils {
 		});
 		try {
 			Message message = new MimeMessage(session);
-			
-			message.setFrom(new InternetAddress(email.getFrom()));
-			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email.getTo()));
-			message.setSubject(email.getSubject());
-			message.setContent(email.getContent(), "text/html; charset=utf-8"); 
+            message.setFrom(new InternetAddress("your-email@example.com"));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email.getTo()));
+            message.setSubject(email.getSubject());
+
+            // Email body with attachment
+            MimeBodyPart bodyPart = new MimeBodyPart();
+            bodyPart.setText(email.getContent());
+
+            MimeBodyPart attachmentPart = new MimeBodyPart();
+            attachmentPart.attachFile(new File(email.getAttachmentPath()));
+
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(attachmentPart);
+
+            message.setContent(multipart);
 			
 			Transport.send(message);
 			
