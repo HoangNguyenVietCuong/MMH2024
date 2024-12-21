@@ -71,7 +71,9 @@ public class LoginControl extends HttpServlet {
 
              session.setAttribute("acc", a);
              String publicKey = dao.getPublicKeyByKeyId(keyid);
+             String keyCDate = dao.getKeyTimeByKeyId(keyid);
              session.setAttribute("publicKey", publicKey);
+             session.setAttribute("keyTime", keyCDate);
              session.setMaxInactiveInterval(60*60*24);
            //luu account len tren cookie
              Cookie u = new Cookie("userC", username);

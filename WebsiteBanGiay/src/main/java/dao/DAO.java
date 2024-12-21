@@ -1599,6 +1599,7 @@ public class DAO {
     }
     public int savePublicKey(String publicKey) {
         String sql = "INSERT INTO Keys (pkey, date) VALUES (?, ?)";
+        
         try (PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, publicKey);
             ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
@@ -1640,6 +1641,31 @@ public class DAO {
         System.out.println("get key ko thanh cong");
         return null;
     }
+    public String getKeyTimeByKeyId(int keyId) {
+        String query = "SELECT FORMAT(date, 'yyyy-MM-dd HH:mm:ss') AS formattedDate FROM Keys WHERE keyid = ?";
+        
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            
+            ps.setInt(1, keyId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println(keyId);
+                    System.out.println(rs.getString("formattedDate"));
+                    return rs.getString("formattedDate"); // Return the formatted date
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Get key time failed.");
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Get key time failed.");
+        return null;
+    }
     public static String savePrivateKey(PrivateKey privateKey) throws Exception {
         // Create a temporary directory
         Path tempDir = Files.createTempDirectory("user-private-key-");
@@ -1658,6 +1684,17 @@ public class DAO {
 
         // Return the absolute file path to be used for email attachment
         return file.getAbsolutePath();
+    }
+    public void updateKeyId(String email, int keyId) {
+        String query = "UPDATE Account SET keyid = ? WHERE email = ?";
+        try {
+            ps = conn.prepareStatement(query);
+            ps.setInt(1, keyId); // Set password
+            ps.setString(2, email); // Specify user for the WHERE clause
+            ps.executeUpdate(); // Execute the update
+        } catch (Exception e) {
+            e.printStackTrace(); // Print the stack trace in case of error
+        }
     }
 
 
