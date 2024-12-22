@@ -1,7 +1,14 @@
 package control;
 
 import java.io.IOException;
+//import java.io.File;
+//import java.io.FileWriter;
+//import java.io.IOException;
+//import java.nio.file.Files;
+//import java.nio.file.Path;
+//import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -11,11 +18,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import dao.DAO;
 
 import entity.Account;
 import entity.Email;
 import entity.EmailUtils;
+import entity.Invoice;
+import entity.InvoiceItem;
 import entity.Cart;
 import entity.Product;
 import entity.SoLuongDaBan;
@@ -86,7 +98,7 @@ public class OrderControl extends HttpServlet {
 				}
 			}
 	        
-	        dao.insertInvoice(accountID, totalMoneyVAT, list, listMoney);
+	        int idInvoice = dao.insertInvoice(accountID, totalMoneyVAT, list, listMoney);
 	        TongChiTieuBanHang t = dao.checkTongChiTieuBanHangExist(accountID);
 	        if(t==null) {
 	        	dao.insertTongChiTieuBanHang(accountID,totalMoneyVAT,0);
@@ -94,6 +106,70 @@ public class OrderControl extends HttpServlet {
 	        else {
 	        	dao.editTongChiTieu(accountID, totalMoneyVAT);
 	        }     
+//	        // Chỗ tạo file JSON trong server
+//	        List<InvoiceItem> listTest = dao.getAllItemOfInvoice(idInvoice);
+//	        Date day = null;
+//	        for(Invoice ico : dao.getAllInvoice()) {
+//	        	if(ico.getMaHD() == idInvoice) {
+//	        		day = ico.getNgayXuat();
+//	        	}
+//	        }
+//	        
+//	     // Tạo đối tượng JSON để lưu thông tin hóa đơn
+//	        JSONObject invoiceJson = new JSONObject();
+//	        JSONArray itemsJson = new JSONArray();
+//
+//	        for (InvoiceItem item : listTest) {
+//	            JSONObject itemJson = new JSONObject();
+//	            itemJson.put("id", item.getId());
+//	            itemJson.put("productId", item.getProductId());
+//	            itemJson.put("amount", item.getAmount());
+//	            itemJson.put("totalPrice", item.getTotalPrice());
+//
+//	            itemsJson.put(itemJson);
+//	        }
+//
+//	        invoiceJson.put("invoiceID", idInvoice);
+//	        invoiceJson.put("totalMoney", totalMoneyVAT);
+//	        invoiceJson.put("date", day);
+//	        invoiceJson.put("items", itemsJson);
+//
+//	        // Lấy đường dẫn thư mục để lưu file JSON
+//	        String path = getServletContext().getRealPath("/WEB-INF/test");
+//	        System.out.println("Path to save file: " + path);
+//
+//	        // Tạo thư mục nếu chưa tồn tại
+//	        Path dirPath = Paths.get(path);
+//	        if (Files.notExists(dirPath)) {
+//	            try {
+//	                Files.createDirectories(dirPath); // Tạo thư mục nếu chưa tồn tại
+//	            } catch (IOException e) {
+//	                e.printStackTrace();
+//	                return; // Thoát nếu không thể tạo thư mục
+//	            }
+//	        }
+//
+//	        // Đảm bảo file được lưu trong thư mục test
+//	        Path filePath = dirPath.resolve("invoice_" + idInvoice + ".json");
+//	        System.out.println("File path: " + filePath);
+//
+//	        // Kiểm tra xem file đã tồn tại hay chưa
+//	        if (Files.exists(filePath)) {
+//	            System.out.println("File already exists: " + filePath);
+//	        } else {
+//	            System.out.println("Creating new file: " + filePath);
+//	        }
+//
+//	        // Ghi dữ liệu JSON vào file
+//	        try {
+//	            Files.write(filePath, invoiceJson.toString().getBytes()); // Ghi nội dung JSON vào file
+//	            System.out.println("File created and data written successfully!");
+//	        } catch (IOException e) {
+//	            e.printStackTrace();
+//	        }
+//	        
+//	        HttpSession sessionGet = request.getSession() ;
+//	        sessionGet.setAttribute("pathToJSON", path);
 		request.getRequestDispatcher("DatHang.jsp").forward(request, response);
 	}
 

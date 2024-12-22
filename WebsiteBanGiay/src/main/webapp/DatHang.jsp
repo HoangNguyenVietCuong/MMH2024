@@ -40,10 +40,10 @@
                 <label for="deliveryAddress">Địa chỉ giao hàng</label>
                 <input name="deliveryAddress" type="text" id="deliveryAddress" class="form-control" placeholder="Delivery Address" required="" autofocus="">
                 <label for="downloadJSON">Tải file json</label>
-                <button class="btn btn-success btn-block" ><i class="fas fa-american-sign-language-interpreting"></i>Tải file</button>
+                <button class="btn btn-success btn-block" type="button" name="action" value="downloadJSON"><i class="fas fa-american-sign-language-interpreting"></i> Tải file</button>
                 <label for="signature">Nhập chữ ký</label>
                 <input name="signature" type="text" id="signature" class="form-control" placeholder="Signature" required="" autofocus="">
-                <button class="btn btn-success btn-block" type="submit"><i class="fas fa-american-sign-language-interpreting"></i>Dat Hang</button>
+                <button class="btn btn-success btn-block" type="submit" name="action" value="submitOrder"><i class="fas fa-american-sign-language-interpreting"></i> Đặt Hàng</button>
                 
             </form>
 
