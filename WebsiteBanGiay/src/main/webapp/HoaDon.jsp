@@ -1,5 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -91,12 +91,6 @@
 <!--Main layout-->
 <main>
   <div class="container pt-4">
-  
-   
-    
-   
-    
-
     <!--Section: Sales Performance KPIs-->
     <section class="mb-4">
     	<c:if test="${error!=null }">
@@ -136,6 +130,7 @@
                   <th scope="col">Account</th>
                   <th scope="col">Tổng Giá($)</th>
                   <th scope="col">Ngày Xuất</th>
+                  <th scope="col">Chi tiết</th>
                 </tr>
               </thead>
            
@@ -150,7 +145,7 @@
                   </c:if>
                   </c:forEach>
                   <td>${String.format("%.02f",i.tongGia) }</td>
-                  <td>${i.ngayXuat }</td> 
+                  <td>${i.ngayXuat }</td>
                 </tr>
                  </c:forEach>
               </tbody>

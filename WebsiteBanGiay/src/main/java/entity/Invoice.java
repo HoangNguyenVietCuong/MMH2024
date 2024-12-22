@@ -46,4 +46,6 @@ public class Invoice {
 	public void setNgayXuat(Date ngayXuat) {
 		this.ngayXuat = ngayXuat;
 	}
+	
+	
 }

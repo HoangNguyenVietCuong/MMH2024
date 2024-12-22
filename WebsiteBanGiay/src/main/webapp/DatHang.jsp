@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -30,15 +31,18 @@
 				  	${mess}
 				</div>
 				</c:if>
-                <label for="name">Name</label>
+                <label for="name">Tên</label>
                 <input name="name" type="text" id="name" class="form-control" placeholder="Name" required="" autofocus="">
-                 <label for="phoneNumber">Phone number</label>
+                 <label for="phoneNumber">Số điện thoại</label>
                 <input name="phoneNumber" type="text" id="phoneNumber" class="form-control" placeholder="Phone number" required="" autofocus="">
                 <label for="email">Email</label>
                 <input name="email" type="text" id="email" class="form-control" placeholder="email" required="" autofocus="">
-                <label for="deliveryAddress">Delivery Address</label>
+                <label for="deliveryAddress">Địa chỉ giao hàng</label>
                 <input name="deliveryAddress" type="text" id="deliveryAddress" class="form-control" placeholder="Delivery Address" required="" autofocus="">
-               
+                <label for="downloadJSON">Tải file json</label>
+                <button class="btn btn-success btn-block" ><i class="fas fa-american-sign-language-interpreting"></i>Tải file</button>
+                <label for="signature">Nhập chữ ký</label>
+                <input name="signature" type="text" id="signature" class="form-control" placeholder="Signature" required="" autofocus="">
                 <button class="btn btn-success btn-block" type="submit"><i class="fas fa-american-sign-language-interpreting"></i>Dat Hang</button>
                 
             </form>
