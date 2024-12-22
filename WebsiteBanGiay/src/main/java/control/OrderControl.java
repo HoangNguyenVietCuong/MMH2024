@@ -9,6 +9,8 @@ import java.io.IOException;
 //import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -106,70 +108,15 @@ public class OrderControl extends HttpServlet {
 	        else {
 	        	dao.editTongChiTieu(accountID, totalMoneyVAT);
 	        }     
-//	        // Chỗ tạo file JSON trong server
-//	        List<InvoiceItem> listTest = dao.getAllItemOfInvoice(idInvoice);
-//	        Date day = null;
-//	        for(Invoice ico : dao.getAllInvoice()) {
-//	        	if(ico.getMaHD() == idInvoice) {
-//	        		day = ico.getNgayXuat();
-//	        	}
-//	        }
-//	        
-//	     // Tạo đối tượng JSON để lưu thông tin hóa đơn
-//	        JSONObject invoiceJson = new JSONObject();
-//	        JSONArray itemsJson = new JSONArray();
-//
-//	        for (InvoiceItem item : listTest) {
-//	            JSONObject itemJson = new JSONObject();
-//	            itemJson.put("id", item.getId());
-//	            itemJson.put("productId", item.getProductId());
-//	            itemJson.put("amount", item.getAmount());
-//	            itemJson.put("totalPrice", item.getTotalPrice());
-//
-//	            itemsJson.put(itemJson);
-//	        }
-//
-//	        invoiceJson.put("invoiceID", idInvoice);
-//	        invoiceJson.put("totalMoney", totalMoneyVAT);
-//	        invoiceJson.put("date", day);
-//	        invoiceJson.put("items", itemsJson);
-//
-//	        // Lấy đường dẫn thư mục để lưu file JSON
-//	        String path = getServletContext().getRealPath("/WEB-INF/test");
-//	        System.out.println("Path to save file: " + path);
-//
-//	        // Tạo thư mục nếu chưa tồn tại
-//	        Path dirPath = Paths.get(path);
-//	        if (Files.notExists(dirPath)) {
-//	            try {
-//	                Files.createDirectories(dirPath); // Tạo thư mục nếu chưa tồn tại
-//	            } catch (IOException e) {
-//	                e.printStackTrace();
-//	                return; // Thoát nếu không thể tạo thư mục
-//	            }
-//	        }
-//
-//	        // Đảm bảo file được lưu trong thư mục test
-//	        Path filePath = dirPath.resolve("invoice_" + idInvoice + ".json");
-//	        System.out.println("File path: " + filePath);
-//
-//	        // Kiểm tra xem file đã tồn tại hay chưa
-//	        if (Files.exists(filePath)) {
-//	            System.out.println("File already exists: " + filePath);
-//	        } else {
-//	            System.out.println("Creating new file: " + filePath);
-//	        }
-//
-//	        // Ghi dữ liệu JSON vào file
-//	        try {
-//	            Files.write(filePath, invoiceJson.toString().getBytes()); // Ghi nội dung JSON vào file
-//	            System.out.println("File created and data written successfully!");
-//	        } catch (IOException e) {
-//	            e.printStackTrace();
-//	        }
-//	        
-//	        HttpSession sessionGet = request.getSession() ;
-//	        sessionGet.setAttribute("pathToJSON", path);
+
+	        try {
+	            String jsonFilePath = dao.exportInvoicesToJSON();
+	            String encodedPath = URLEncoder.encode(jsonFilePath, StandardCharsets.UTF_8.toString());
+	            session.setAttribute("jsonFilePath", encodedPath); 
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            request.setAttribute("error", "Failed to export invoices to JSON.");
+	        }
 		request.getRequestDispatcher("DatHang.jsp").forward(request, response);
 	}
 
@@ -232,16 +179,14 @@ public class OrderControl extends HttpServlet {
 				sb.append("Chu cua hang");
 				
 				email.setContent(sb.toString());
+				email.setAttachmentPath(null);
 				EmailUtils.send(email);
 				request.setAttribute("mess", "Dat hang thanh cong!");
 				
 				dao.deleteCartByAccountID(accountID);
 				
 				
-				//new code
-//				request.setAttribute("email", emailAddress);
-//				request.getRequestDispatcher("ThongTinDatHang.jsp").forward(request, response);
-				
+
 			
 		} catch (Exception e) {
 			request.setAttribute("error", "Dat hang that bai!");

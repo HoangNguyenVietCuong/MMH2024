@@ -1,7 +1,7 @@
 package entity;
 
 public class Email {
-	private String from, to, fromPassword, content, subject;
+	private String from, to, fromPassword, content, subject, attachmentPath;
 
 	public String getFrom() {
 		return from;
@@ -41,5 +41,13 @@ public class Email {
 
 	public void setSubject(String subject) {
 		this.subject = subject;
+	}
+
+	public String getAttachmentPath() {
+		return attachmentPath;
+	}
+
+	public void setAttachmentPath(String attachmentPath) {
+		this.attachmentPath = attachmentPath;
 	}
 }

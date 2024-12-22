@@ -13,6 +13,7 @@ public class Account {
     private int isSell;
     private int isAdmin;
     private String email;
+    private int keyId;
 
     public String getEmail() {
 		return email;
@@ -51,7 +52,7 @@ public class Account {
         return isSell;
     }
 
-    public Account(int id, String user, String pass, int isSell, int isAdmin, String email) {
+    public Account(int id, String user, String pass, int isSell, int isAdmin, String email, int keyId) {
 		
 		this.id = id;
 		this.user = user;
@@ -59,6 +60,7 @@ public class Account {
 		this.isSell = isSell;
 		this.isAdmin = isAdmin;
 		this.email = email;
+		this.keyId = keyId;
 	}
 
 	public Account() {
@@ -82,6 +84,14 @@ public class Account {
     public void setIsAdmin(int isAdmin) {
         this.isAdmin = isAdmin;
     }
+
+	public int getKeyId() {
+		return keyId;
+	}
+
+	public void setKeyId(int keyId) {
+		this.keyId = keyId;
+	}
 
    
    
