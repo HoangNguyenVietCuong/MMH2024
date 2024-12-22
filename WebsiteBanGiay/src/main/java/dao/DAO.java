@@ -1641,8 +1641,33 @@ public class DAO {
         System.out.println("get key ko thanh cong");
         return null;
     }
-    public String getKeyTimeByKeyId(int keyId) {
+    public String getKeyCreateTime(int keyId) {
         String query = "SELECT FORMAT(date, 'yyyy-MM-dd HH:mm:ss') AS formattedDate FROM Keys WHERE keyid = ?";
+        
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            
+            ps.setInt(1, keyId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println(keyId);
+                    System.out.println(rs.getString("formattedDate"));
+                    return rs.getString("formattedDate"); // Return the formatted date
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Get key time failed.");
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Get key time failed.");
+        return null;
+    }
+    public String getKeyExpiredTime(int keyId) {
+        String query = "SELECT FORMAT(expired_date, 'yyyy-MM-dd HH:mm:ss') AS formattedDate FROM Keys WHERE keyid = ?";
         
         try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
@@ -1694,6 +1719,18 @@ public class DAO {
             ps.executeUpdate(); // Execute the update
         } catch (Exception e) {
             e.printStackTrace(); // Print the stack trace in case of error
+        }
+    }
+    public void setKeyExpired(int keyId) {
+        String query = "INSERT INTO Keys expired_date VALUES ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            
+            ps.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

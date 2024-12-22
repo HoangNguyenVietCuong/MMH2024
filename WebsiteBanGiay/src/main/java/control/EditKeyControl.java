@@ -47,6 +47,7 @@ public class EditKeyControl extends HttpServlet {
         String pass = request.getParameter("pass");
         String re_pass = request.getParameter("repass");
         String email = request.getParameter("email");
+        int oldKeyId = a.getKeyId();
         if(!pass.equals(re_pass)){
             response.sendRedirect("EditKey.jsp");
         }else{
@@ -60,14 +61,14 @@ public class EditKeyControl extends HttpServlet {
 	            	int keyId = dao.savePublicKey(publicKeyBase64);
 	            	
 	            	if(keyId != -1) {
-		                //dc signup
+		                dao.setKeyExpired(oldKeyId);
 	            		System.out.println(keyId);
 		                dao.updateKeyId(email, keyId);
 		                System.out.println("gen key success");
 		                String pvkeyPath =  dao.savePrivateKey(rsa.getPvkey());
 		                session.setAttribute("acc", a);
 		                String publicKey = dao.getPublicKeyByKeyId(keyId);
-		                String keyCDate = dao.getKeyTimeByKeyId(keyId);
+		                String keyCDate = dao.getKeyCreateTime(keyId);
 		                session.setAttribute("publicKey", publicKey);
 		                session.setAttribute("keyTime", keyCDate);
 		                System.out.println(pvkeyPath);
