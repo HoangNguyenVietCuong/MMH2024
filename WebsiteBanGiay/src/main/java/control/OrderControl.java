@@ -1,6 +1,8 @@
 package control;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -89,6 +91,14 @@ public class OrderControl extends HttpServlet {
 	        else {
 	        	dao.editTongChiTieu(accountID, totalMoneyVAT);
 	        }
+	        try {
+	            String jsonFilePath = dao.exportInvoicesToJSON();
+	            String encodedPath = URLEncoder.encode(jsonFilePath, StandardCharsets.UTF_8.toString());
+	            session.setAttribute("jsonFilePath", encodedPath); 
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            request.setAttribute("error", "Failed to export invoices to JSON.");
+	        }
 	        
 	        
 		request.getRequestDispatcher("DatHang.jsp").forward(request, response);
@@ -153,16 +163,14 @@ public class OrderControl extends HttpServlet {
 				sb.append("Chu cua hang");
 				
 				email.setContent(sb.toString());
+				email.setAttachmentPath(null);
 				EmailUtils.send(email);
 				request.setAttribute("mess", "Dat hang thanh cong!");
 				
 				dao.deleteCartByAccountID(accountID);
 				
 				
-				//new code
-//				request.setAttribute("email", emailAddress);
-//				request.getRequestDispatcher("ThongTinDatHang.jsp").forward(request, response);
-				
+
 			
 		} catch (Exception e) {
 			request.setAttribute("error", "Dat hang that bai!");

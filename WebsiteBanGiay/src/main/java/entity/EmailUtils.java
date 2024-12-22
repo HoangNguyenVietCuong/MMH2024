@@ -40,13 +40,17 @@ public class EmailUtils {
 
             // Email body with attachment
             MimeBodyPart bodyPart = new MimeBodyPart();
-            bodyPart.setText(email.getContent());
-
-            MimeBodyPart attachmentPart = new MimeBodyPart();
-            attachmentPart.attachFile(new File(email.getAttachmentPath()));
+            bodyPart.setText(email.getContent(), "utf-8", "html");
 
             Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(attachmentPart);
+            multipart.addBodyPart(bodyPart);
+
+            // Check if an attachment path is provided
+            if (email.getAttachmentPath() != null && !email.getAttachmentPath().isEmpty()) {
+                MimeBodyPart attachmentPart = new MimeBodyPart();
+                attachmentPart.attachFile(new File(email.getAttachmentPath()));
+                multipart.addBodyPart(attachmentPart);
+            }
 
             message.setContent(multipart);
 			

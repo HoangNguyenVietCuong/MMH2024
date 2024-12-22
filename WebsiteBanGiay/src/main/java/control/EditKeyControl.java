@@ -81,7 +81,7 @@ public class EditKeyControl extends HttpServlet {
 		                mail.setSubject("Your Private Key");
 		                mail.setAttachmentPath(pvkeyPath);
 		                mail.setContent(" ");
-		                // Send the email 
+		                
 		                EmailUtils.send(mail);
 
 		                System.out.println("Email sent successfully!");

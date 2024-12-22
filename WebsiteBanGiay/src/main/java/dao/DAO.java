@@ -31,7 +31,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 
 public class DAO {
@@ -1442,7 +1447,7 @@ public class DAO {
             ps = conn.prepareStatement(query);
             ps.setInt(1, accountID);
             ps.setDouble(2, tongGia);
-            ps.setDate(3,getCurrentDate());
+            ps.setTimestamp(3,new Timestamp(System.currentTimeMillis()) );
             ps.executeUpdate();
            
         } catch (Exception e) {	
@@ -1696,7 +1701,7 @@ public class DAO {
         Path tempDir = Files.createTempDirectory("user-private-key-");
 
         // Define the file name (e.g., private-key.key)
-        String filename = "private-key.key";
+        String filename = "private-key.txt";
 
         // Full file path
         File file = new File(tempDir.toFile(), filename);
@@ -1732,6 +1737,45 @@ public class DAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public String exportInvoicesToJSON() throws Exception {
+        String query = "SELECT maHD, accountID, tongGia, ngayXuat FROM Invoice WHERE maHD=( SELECT max(maHD) FROM Invoice)";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String jsonFilePath = null;
+
+        try {
+            ps = conn.prepareStatement(query);
+            rs = ps.executeQuery();
+
+            List<Map<String, Object>> invoices = new ArrayList<>();
+
+            // Parse result set into a list of maps
+            while (rs.next()) {
+                Map<String, Object> invoice = new HashMap<>();
+                invoice.put("maHD", rs.getInt("maHD"));
+                invoice.put("accountID", rs.getInt("accountID"));
+                invoice.put("tongGia", rs.getFloat("tongGia"));
+                invoice.put("ngayXuat", rs.getTimestamp("ngayXuat")); // Ensure datetime is stored properly
+                invoices.add(invoice);
+            }
+
+            // Convert the list to JSON
+            ObjectMapper objectMapper = new ObjectMapper();
+            File tempFile = File.createTempFile("invoices", ".json");
+            objectMapper.writeValue(tempFile, invoices);
+
+            jsonFilePath = tempFile.getAbsolutePath(); // Get the file path
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e; // Propagate exception
+        } finally {
+            if (rs != null) rs.close();
+            if (ps != null) ps.close();
+        }
+
+        return jsonFilePath; // Return the path of the generated JSON file
     }
 
 
