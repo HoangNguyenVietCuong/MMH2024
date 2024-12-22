@@ -1,16 +1,12 @@
 package control;
 
 import java.io.IOException;
-//import java.io.File;
-//import java.io.FileWriter;
-//import java.io.IOException;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
-//import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -34,13 +30,14 @@ import entity.Cart;
 import entity.Product;
 import entity.SoLuongDaBan;
 import entity.TongChiTieuBanHang;
+import service.SignatureService;
 
 /**
  * Servlet implementation class ForgotPasswordControl
  */
 @WebServlet(name = "OrderControl", urlPatterns = {"/order"})
 public class OrderControl extends HttpServlet {
-	
+	//private SignatureService sv = new SignatureService();
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		 HttpSession session = request.getSession();
 		 	// Kiểm tra đăng nhập
@@ -101,6 +98,7 @@ public class OrderControl extends HttpServlet {
 			}
 	        
 	        int idInvoice = dao.insertInvoice(accountID, totalMoneyVAT, list, listMoney);
+	        dao.insertInvoice(accountID, totalMoneyVAT, list, listMoney);
 	        TongChiTieuBanHang t = dao.checkTongChiTieuBanHangExist(accountID);
 	        if(t==null) {
 	        	dao.insertTongChiTieuBanHang(accountID,totalMoneyVAT,0);
@@ -130,7 +128,7 @@ public class OrderControl extends HttpServlet {
 			String name = request.getParameter("name");
 			String phoneNumber = request.getParameter("phoneNumber");
 			String deliveryAddress = request.getParameter("deliveryAddress");
-			
+			String signature = request.getParameter("signature");
 			 HttpSession session = request.getSession();
 		        Account a = (Account) session.getAttribute("acc");
 		        if(a == null) {
@@ -151,10 +149,12 @@ public class OrderControl extends HttpServlet {
 					}
 				}
 		        double totalMoneyVAT=totalMoney+totalMoney*0.1;
+		        String key = dao.getKey(accountID);
+		       PublicKey b = SignatureService.getPublicKeyFromBase64(key);
 		        
+		       
 		        
 		        // Need code email here
-		        
 		        //old code
 				Email email =new Email();
 				email.setFrom("tienanhnono@gmail.com"); //chinh lai email quan tri tai day [chu y dung email con hoat dong]
@@ -182,7 +182,6 @@ public class OrderControl extends HttpServlet {
 				email.setAttachmentPath(null);
 				EmailUtils.send(email);
 				request.setAttribute("mess", "Dat hang thanh cong!");
-				
 				dao.deleteCartByAccountID(accountID);
 				
 				
