@@ -1,6 +1,8 @@
 package control;
 
 import java.io.IOException;
+import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -28,20 +30,24 @@ public class OrderControl extends HttpServlet {
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		 HttpSession session = request.getSession();
+		 	// Kiểm tra đăng nhập
 	        Account a = (Account) session.getAttribute("acc");
 	        if(a == null) {
 	        	response.sendRedirect("login");
 	        	return;
 	        }
+	        // Tính tổng tiền
 	        int accountID = a.getId();
 	        DAO dao = new DAO();
 	        List<Cart> list = dao.getCartByAccountID(accountID);
 	        List<Product> list2 = dao.getAllProduct();
+	        List<Double> listMoney = new ArrayList<Double>();
 	        double totalMoney=0;
 	        for(Cart c : list) {
 				for(Product p : list2) {
 					if(c.getProductID()==p.getId()) {
 						totalMoney=totalMoney+(p.getPrice()*c.getAmount());
+						listMoney.add(p.getPrice()*c.getAmount());
 					}
 				}
 			}
@@ -81,16 +87,14 @@ public class OrderControl extends HttpServlet {
 				}
 			}
 	        
-	        dao.insertInvoice(accountID, totalMoneyVAT);
+	        dao.insertInvoice(accountID, totalMoneyVAT, list, listMoney);
 	        TongChiTieuBanHang t = dao.checkTongChiTieuBanHangExist(accountID);
 	        if(t==null) {
 	        	dao.insertTongChiTieuBanHang(accountID,totalMoneyVAT,0);
 	        }
 	        else {
 	        	dao.editTongChiTieu(accountID, totalMoneyVAT);
-	        }
-	        
-	        
+	        }     
 		request.getRequestDispatcher("DatHang.jsp").forward(request, response);
 	}
 
@@ -104,7 +108,7 @@ public class OrderControl extends HttpServlet {
 			String name = request.getParameter("name");
 			String phoneNumber = request.getParameter("phoneNumber");
 			String deliveryAddress = request.getParameter("deliveryAddress");
-			
+			String signature = request.getParameter("signature");
 			 HttpSession session = request.getSession();
 		        Account a = (Account) session.getAttribute("acc");
 		        if(a == null) {
@@ -125,36 +129,36 @@ public class OrderControl extends HttpServlet {
 					}
 				}
 		        double totalMoneyVAT=totalMoney+totalMoney*0.1;
+		        String key = dao.getKey(accountID);
+		       // PublicKey a = getPublicKeyFromBase64(key);
 		        
 		        
 		        // Need code email here
 		        
-		        //old code
-				Email email =new Email();
-				email.setFrom("tienanhnono@gmail.com"); //chinh lai email quan tri tai day [chu y dung email con hoat dong]
-				email.setFromPassword("gvkg pzjb suod bqib"); //mat khau email tren
-				email.setTo(emailAddress);
-				email.setSubject("Dat hang thanh cong tu Shoes Family");
-				StringBuilder sb = new StringBuilder();
-				sb.append("Dear ").append(name).append("<br>");
-				sb.append("Ban vua dat dang tu Shoes Family. <br> ");
-				sb.append("Dia chi nhan hang cua ban la: <b>").append(deliveryAddress).append(" </b> <br>");
-				sb.append("So dien thoai khi nhan hang cua ban la: <b>").append(phoneNumber).append(" </b> <br>");
-				sb.append("Cac san pham ban dat la: <br>");
-				for(Cart c : list) {
-					for(Product p : list2) {
-						if(c.getProductID()==p.getId()) {
-							sb.append(p.getName()).append(" | ").append("Price:").append(p.getPrice()).append("$").append(" | ").append("Amount:").append(c.getAmount()).append(" | ").append("Size:").append(c.getSize()).append("<br>");
-						}
-					}
-				}
-				sb.append("Tong Tien: ").append(String.format("%.02f",totalMoneyVAT)).append("$").append("<br>");
-				sb.append("Cam on ban da dat hang tai Shoes Family<br>");
-				sb.append("Chu cua hang");
-				
-				email.setContent(sb.toString());
-				EmailUtils.send(email);
-				request.setAttribute("mess", "Dat hang thanh cong!");
+				/*
+				 * //old code Email email =new Email(); email.setFrom("tienanhnono@gmail.com");
+				 * //chinh lai email quan tri tai day [chu y dung email con hoat dong]
+				 * email.setFromPassword("gvkg pzjb suod bqib"); //mat khau email tren
+				 * email.setTo(emailAddress);
+				 * email.setSubject("Dat hang thanh cong tu Shoes Family"); StringBuilder sb =
+				 * new StringBuilder(); sb.append("Dear ").append(name).append("<br>");
+				 * sb.append("Ban vua dat dang tu Shoes Family. <br> ");
+				 * sb.append("Dia chi nhan hang cua ban la: <b>").append(deliveryAddress).
+				 * append(" </b> <br>");
+				 * sb.append("So dien thoai khi nhan hang cua ban la: <b>").append(phoneNumber).
+				 * append(" </b> <br>"); sb.append("Cac san pham ban dat la: <br>"); for(Cart c
+				 * : list) { for(Product p : list2) { if(c.getProductID()==p.getId()) {
+				 * sb.append(p.getName()).append(" | ").append("Price:").append(p.getPrice()).
+				 * append("$").append(" | ").append("Amount:").append(c.getAmount()).
+				 * append(" | ").append("Size:").append(c.getSize()).append("<br>"); } } }
+				 * sb.append("Tong Tien: ").append(String.format("%.02f",totalMoneyVAT)).append(
+				 * "$").append("<br>");
+				 * sb.append("Cam on ban da dat hang tai Shoes Family<br>");
+				 * sb.append("Chu cua hang");
+				 * 
+				 * email.setContent(sb.toString()); EmailUtils.send(email);
+				 * request.setAttribute("mess", "Dat hang thanh cong!");
+				 */
 				
 				dao.deleteCartByAccountID(accountID);
 				

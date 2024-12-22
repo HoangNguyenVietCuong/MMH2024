@@ -19,6 +19,7 @@ import entity.Product;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1420,22 +1421,83 @@ public class DAO {
         }
     }
     
-    public void insertInvoice(int accountID, double tongGia) {
-        String query = "insert Invoice(accountID,tongGia,ngayXuat)\r\n"
-        		+ "values(?,?,?)";
+    // Thêm hóa đơn vào dtb
+    public int insertInvoice(int accountID, double tongGia, List<Cart> list, List<Double> listGia) {
+        String query = "INSERT Invoice(accountID, tongGia, ngayXuat)\r\n "+"VALUES (?, ?, ?)";
+        int generatedId = -1; // Khởi tạo giá trị mặc định
 
         try {
-            conn = new DBContext().getConnection();//mo ket noi voi sql
-            ps = conn.prepareStatement(query);
+            conn = new DBContext().getConnection(); // Mở kết nối SQL
+            ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS); // Cho phép trả về khóa vừa sinh
             ps.setInt(1, accountID);
             ps.setDouble(2, tongGia);
-            ps.setDate(3,getCurrentDate());
-            ps.executeUpdate();
-           
-        } catch (Exception e) {	
-        	
+            ps.setDate(3, getCurrentDate()); // Lấy thời gian hiện tại
+            System.out.println(ps.executeUpdate());
+
+            // Lấy `maHD` mới được tạo
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                generatedId = rs.getInt(1); // Lấy giá trị khóa chính
+            }
+            System.out.println(generatedId);
+            insertQuanLyChiTiet(generatedId, list, listGia);
+        } catch (Exception e) {
+        	System.out.println("Failure");
+            e.printStackTrace();
+        }
+        return generatedId; // Trả về `maHD` mới
+    }
+    
+    public void insertQuanLyChiTiet(int maHD, List<Cart> list, List<Double> listGia) {
+        String query = "INSERT QuanLyChiTiet(id, idChitietHoaDon)\r\n "+"VALUES (?, ?)";
+
+        try {
+            conn = new DBContext().getConnection(); // Mở kết nối SQL
+            
+            int count = 0;
+            // Lặp qua danh sách sản phẩm trong giỏ hàng (list)
+            for (Cart cart : list) {
+                int chiTietHoaDonId = insertChiTietHoaDon(cart, listGia.get(count)); // Thêm vào ChiTietHoaDon và lấy ID mới
+                // Cập nhật vào QuanLyChiTiet
+                // Note: Chạy hàm khác bên trong hàm có prepare statement cũng sẽ ảnh hưởng prepare statement của hàm hiện tại (Hoặc do tên biến giống nhau)
+                ps = conn.prepareStatement(query);
+                ps.setInt(1, maHD);
+                ps.setInt(2, chiTietHoaDonId);
+                System.out.println(ps.executeUpdate());
+                System.out.println("Yes, please");
+                count++;
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
+
+    
+    public int insertChiTietHoaDon(Cart cart, double gia) {
+        String query = "INSERT ChiTietHoaDon(productId, amount, totalPrice)\r\n"+"VALUES (?, ?, ?)";
+        int generatedId = -1;
+
+        try {
+            conn = new DBContext().getConnection(); // Mở kết nối SQL
+            ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, cart.getProductID());
+            ps.setInt(2, cart.getAmount());
+            ps.setDouble(3, gia);
+            ps.executeUpdate();
+
+            // Lấy `id` vừa được tạo
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                generatedId = rs.getInt(1);
+            }
+            System.out.println(generatedId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return generatedId;
+    }
+
     
     public void insertCart(int accountID, int productID, int amount, String size) {
         String query = "insert Cart(accountID, productID, amount,size)\r\n"
@@ -1584,7 +1646,37 @@ public class DAO {
         } catch (Exception e) {
         }
     }
-
+    
+	/*
+	 * String query = "select top 1 * from Review\r\n" +
+	 * "where accountID = ? and productID = ?\r\n" + "order by maReview desc"; try {
+	 * conn = new DBContext().getConnection();//mo ket noi voi sql ps =
+	 * conn.prepareStatement(query); ps.setInt(1, accountID); ps.setInt(2,
+	 * productID); rs = ps.executeQuery(); while (rs.next()) { return new
+	 * Review(rs.getInt(1), rs.getInt(2), rs.getString(3), rs.getDate(4)); } } catch
+	 * (Exception e) {
+	 */
+    
+public String getKey(int id) {
+	String query ="select k.pubKey from Key\r\n"+
+"join Account a on a.uID = k.uID\r\n" +
+			"where a.uID=?";
+	String publicKey=null;
+	try {
+		conn = new DBContext().getConnection();
+		ps = conn.prepareStatement(query);
+		ps.setInt(1, id);
+		rs = ps.executeQuery(); 
+			 while (rs.next()) {
+				 publicKey=rs.getString(2);
+			 }
+		
+	}catch (Exception e) {
+    }
+	return publicKey;
+}
+   
+   
    public static void main(String[] args) {
         DAO dao = new DAO();
 //        List<Review> list = 
