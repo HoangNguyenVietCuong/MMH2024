@@ -10,7 +10,9 @@ import dao.DAO;
 
 public class SignatureService {
 	private DAO dao;
-
+	public SignatureService() {
+		
+	}
 	public SignatureService(DAO dao) {
 		this.dao = dao;
 

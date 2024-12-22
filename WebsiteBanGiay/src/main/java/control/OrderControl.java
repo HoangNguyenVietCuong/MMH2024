@@ -21,13 +21,14 @@ import entity.Cart;
 import entity.Product;
 import entity.SoLuongDaBan;
 import entity.TongChiTieuBanHang;
+import service.SignatureService;
 
 /**
  * Servlet implementation class ForgotPasswordControl
  */
 @WebServlet(name = "OrderControl", urlPatterns = {"/order"})
 public class OrderControl extends HttpServlet {
-	
+	//private SignatureService sv = new SignatureService();
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		 HttpSession session = request.getSession();
 		 	// Kiểm tra đăng nhập
@@ -130,8 +131,9 @@ public class OrderControl extends HttpServlet {
 				}
 		        double totalMoneyVAT=totalMoney+totalMoney*0.1;
 		        String key = dao.getKey(accountID);
-		       // PublicKey a = getPublicKeyFromBase64(key);
+		       PublicKey b = SignatureService.getPublicKeyFromBase64(key);
 		        
+		       
 		        
 		        // Need code email here
 		        
