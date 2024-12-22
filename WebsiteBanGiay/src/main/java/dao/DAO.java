@@ -1867,32 +1867,37 @@ public class DAO {
 
         return jsonFilePath; // Return the path of the generated JSON file
     }
-
-
+    
+	/*
+	 * String query = "select top 1 * from Review\r\n" +
+	 * "where accountID = ? and productID = ?\r\n" + "order by maReview desc"; try {
+	 * conn = new DBContext().getConnection();//mo ket noi voi sql ps =
+	 * conn.prepareStatement(query); ps.setInt(1, accountID); ps.setInt(2,
+	 * productID); rs = ps.executeQuery(); while (rs.next()) { return new
+	 * Review(rs.getInt(1), rs.getInt(2), rs.getString(3), rs.getDate(4)); } } catch
+	 * (Exception e) {
+	 */
+    
+public String getKey(int id) {
+	String query ="select k.pubKey from Key\r\n"+
+"join Account a on a.uID = k.uID\r\n" +
+			"where a.uID=?";
+	String publicKey=null;
+	try {
+		conn = new DBContext().getConnection();
+		ps = conn.prepareStatement(query);
+		ps.setInt(1, id);
+		rs = ps.executeQuery(); 
+			 while (rs.next()) {
+				 publicKey=rs.getString(2);
+			 }
+		
+	}catch (Exception e) {
+    }
+	return publicKey;
+}
    public static void main(String[] args) {
         DAO dao = new DAO();
-//        List<Review> list = 
-//        	dao.insertProduct("GiÃ y BÃ³ng Ä�Ã¡ Nam Bitis Hunter Football","https://product.hstatic.net/1000230642/product/02400vag__1__5d559f914caf4864ad99a37c18cc1a1b_1024x1024.jpg",
-//        					"535","GiÃ y BÃ³ng Ä�Ã¡ Nam Biti Hunter Football","Vá»›i thiáº¿t káº¿ nÄƒng Ä‘á»™ng, GiÃ y bÃ³ng Ä‘Ã¡ Bitiâ€™s Hunter Ä‘Æ°á»£c tung ra vá»›i 5 mÃ u sáº¯c ná»•i báº­t táº¡o Ä‘iá»ƒm nháº¥n trÃªn sÃ¢n Ä‘áº¥u.",
-//        					"3",1,"G39","Yellow","Ho Chi Minh","https://product.hstatic.net/1000230642/product/02400vag__3__3a83e45335054285a27fba37cafb23c1_1024x1024.jpg",
-//        					"https://product.hstatic.net/1000230642/product/02400vag__4__d3693ef3babe4fc3a2908d8eb2df6e3b_1024x1024.jpg","https://product.hstatic.net/1000230642/product/02400vag__4__d3693ef3babe4fc3a2908d8eb2df6e3b_1024x1024.jpg");
-//        dao.editProduct("Giay chay du lich 2","https://giaygiare.vn/upload/sanpham/nike-sb-dunk-low-eire-net-deep-orange.jpg","301","title 3",
-//       		"desciption desciption 3", "1", "G66", "Blue", "Ho Chi Minh", "https://giaygiare.vn/upload/sanpham/nike-sb-dunk-low-eire-net-deep-orange.jpg",
-//       		"https://giaygiare.vn/upload/sanpham/nike-sb-dunk-low-eire-net-deep-orange.jpg",
-//        		"https://giaygiare.vn/upload/sanpham/nike-sb-dunk-low-eire-net-deep-orange.jpg", "3");
-
-//        List<Invoice> list = dao.searchByNgayXuat("2021-11-20");
-//        for (Invoice o : list) 
-//        { 
-//        	System.out.println(o); 
-//        }
-//      int s = dao.checkAccountAdmin(1);
-//      System.out.println(s);
-//      System.out.println("da chay xong");
-
-		/*
-		 * for (Review o : list) { System.out.println(o); }
-		 */
    }
 
 }

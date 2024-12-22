@@ -54,8 +54,5 @@ public class Invoice {
 	}
 	public void setList(List<InvoiceItem> list) {
 		this.list = list;
-	}
-	
-	
-	
+	}	
 }
