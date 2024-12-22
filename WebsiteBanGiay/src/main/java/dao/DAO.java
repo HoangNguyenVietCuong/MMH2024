@@ -17,15 +17,28 @@ import entity.Category;
 import entity.Invoice;
 import entity.InvoiceItem;
 import entity.Product;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.PrivateKey;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 
 public class DAO {
@@ -262,7 +275,8 @@ public class DAO {
                         rs.getString(3),
                         rs.getInt(4),
                         rs.getInt(5),
-                		rs.getString(6)));
+                		rs.getString(6),
+                		rs.getInt(7)));
             }
         } catch (Exception e) {
         }
@@ -1128,7 +1142,8 @@ public class DAO {
                         rs.getString(3),
                         rs.getInt(4),
                         rs.getInt(5),
-                		rs.getString(6));
+                		rs.getString(6),
+                		rs.getInt(7));
             }
         } catch (Exception e) {
         }
@@ -1149,7 +1164,8 @@ public class DAO {
                         rs.getString(3),
                         rs.getInt(4),
                         rs.getInt(5),
-                		rs.getString(6));
+                		rs.getString(6),
+                		rs.getInt(7));
             }
         } catch (Exception e) {
         }
@@ -1170,7 +1186,8 @@ public class DAO {
                         rs.getString(3),
                         rs.getInt(4),
                         rs.getInt(5),
-                		rs.getString(6));
+                		rs.getString(6),
+                		rs.getInt(7));
             }
         } catch (Exception e) {
         }
@@ -1198,15 +1215,16 @@ public class DAO {
         return null;
     }
 
-    public void singup(String user, String pass, String email) {
+    public void singup(String user, String pass, String email,int keyId) {
         String query = "insert into Account\n"
-                + "values(?,?,0,0,?)";
+                + "values(?,?,0,0,?,?)";
         try {
             conn = new DBContext().getConnection();//mo ket noi voi sql
             ps = conn.prepareStatement(query);
             ps.setString(1, user);
             ps.setString(2, pass);
             ps.setString(3, email);
+            ps.setInt(4, keyId);
             ps.executeUpdate();
         } catch (Exception e) {
         }
@@ -1674,12 +1692,188 @@ public class DAO {
         } catch (Exception e) {
         }
     }
+    public int savePublicKey(String publicKey) {
+        String sql = "INSERT INTO Keys (pkey, date) VALUES (?, ?)";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, publicKey);
+            ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1); // Trả về key_id
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1; 
+    }
+
+    public String getPublicKeyByKeyId(int keyId) {
+        String query = "SELECT pkey FROM Keys WHERE keyid = ?";
+        
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            
+            ps.setInt(1, keyId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                	System.out.println(keyId);
+                	System.out.println(rs.getString("pkey"));
+                    return rs.getString("pkey");
+                    
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("get key ko thanh cong");
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("get key ko thanh cong");
+        return null;
+    }
+    public String getKeyCreateTime(int keyId) {
+        String query = "SELECT FORMAT(date, 'yyyy-MM-dd HH:mm:ss') AS formattedDate FROM Keys WHERE keyid = ?";
+        
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            
+            ps.setInt(1, keyId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println(keyId);
+                    System.out.println(rs.getString("formattedDate"));
+                    return rs.getString("formattedDate"); // Return the formatted date
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Get key time failed.");
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Get key time failed.");
+        return null;
+    }
+    public String getKeyExpiredTime(int keyId) {
+        String query = "SELECT FORMAT(expired_date, 'yyyy-MM-dd HH:mm:ss') AS formattedDate FROM Keys WHERE keyid = ?";
+        
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            
+            ps.setInt(1, keyId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println(keyId);
+                    System.out.println(rs.getString("formattedDate"));
+                    return rs.getString("formattedDate"); // Return the formatted date
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Get key time failed.");
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Get key time failed.");
+        return null;
+    }
+    public static String savePrivateKey(PrivateKey privateKey) throws Exception {
+        // Create a temporary directory
+        Path tempDir = Files.createTempDirectory("user-private-key-");
+
+        // Define the file name (e.g., private-key.key)
+        String filename = "private-key.txt";
+
+        // Full file path
+        File file = new File(tempDir.toFile(), filename);
+        
+        // Save the private key to the file
+        try (FileOutputStream fos = new FileOutputStream(file);
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(privateKey);
+        }
+
+        // Return the absolute file path to be used for email attachment
+        return file.getAbsolutePath();
+    }
+    public void updateKeyId(String email, int keyId) {
+        String query = "UPDATE Account SET keyid = ? WHERE email = ?";
+        try {
+            ps = conn.prepareStatement(query);
+            ps.setInt(1, keyId); // Set password
+            ps.setString(2, email); // Specify user for the WHERE clause
+            ps.executeUpdate(); // Execute the update
+        } catch (Exception e) {
+            e.printStackTrace(); // Print the stack trace in case of error
+        }
+    }
+    public void setKeyExpired(int keyId) {
+        String query = "INSERT INTO Keys expired_date VALUES ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            
+            ps.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public String exportInvoicesToJSON() throws Exception {
+        String query = "SELECT maHD, accountID, tongGia, ngayXuat FROM Invoice WHERE maHD=( SELECT max(maHD) FROM Invoice)";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        String jsonFilePath = null;
+
+        try {
+            ps = conn.prepareStatement(query);
+            rs = ps.executeQuery();
+
+            List<Map<String, Object>> invoices = new ArrayList<>();
+
+            // Parse result set into a list of maps
+            while (rs.next()) {
+                Map<String, Object> invoice = new HashMap<>();
+                invoice.put("maHD", rs.getInt("maHD"));
+                invoice.put("accountID", rs.getInt("accountID"));
+                invoice.put("tongGia", rs.getFloat("tongGia"));
+                invoice.put("ngayXuat", rs.getTimestamp("ngayXuat")); // Ensure datetime is stored properly
+                invoices.add(invoice);
+            }
+
+            // Convert the list to JSON
+            ObjectMapper objectMapper = new ObjectMapper();
+            File tempFile = File.createTempFile("invoices", ".json");
+            objectMapper.writeValue(tempFile, invoices);
+
+            jsonFilePath = tempFile.getAbsolutePath(); // Get the file path
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e; // Propagate exception
+        } finally {
+            if (rs != null) rs.close();
+            if (ps != null) ps.close();
+        }
+
+        return jsonFilePath; // Return the path of the generated JSON file
+    }
+
 
    public static void main(String[] args) {
         DAO dao = new DAO();
 //        List<Review> list = 
-//        	dao.insertProduct("Giày Bóng Đá Nam Bitis Hunter Football","https://product.hstatic.net/1000230642/product/02400vag__1__5d559f914caf4864ad99a37c18cc1a1b_1024x1024.jpg",
-//        					"535","Giày Bóng Đá Nam Biti Hunter Football","Với thiết kế năng động, Giày bóng đá Biti’s Hunter được tung ra với 5 màu sắc nổi bật tạo điểm nhấn trên sân đấu.",
+//        	dao.insertProduct("GiÃ y BÃ³ng Ä�Ã¡ Nam Bitis Hunter Football","https://product.hstatic.net/1000230642/product/02400vag__1__5d559f914caf4864ad99a37c18cc1a1b_1024x1024.jpg",
+//        					"535","GiÃ y BÃ³ng Ä�Ã¡ Nam Biti Hunter Football","Vá»›i thiáº¿t káº¿ nÄƒng Ä‘á»™ng, GiÃ y bÃ³ng Ä‘Ã¡ Bitiâ€™s Hunter Ä‘Æ°á»£c tung ra vá»›i 5 mÃ u sáº¯c ná»•i báº­t táº¡o Ä‘iá»ƒm nháº¥n trÃªn sÃ¢n Ä‘áº¥u.",
 //        					"3",1,"G39","Yellow","Ho Chi Minh","https://product.hstatic.net/1000230642/product/02400vag__3__3a83e45335054285a27fba37cafb23c1_1024x1024.jpg",
 //        					"https://product.hstatic.net/1000230642/product/02400vag__4__d3693ef3babe4fc3a2908d8eb2df6e3b_1024x1024.jpg","https://product.hstatic.net/1000230642/product/02400vag__4__d3693ef3babe4fc3a2908d8eb2df6e3b_1024x1024.jpg");
 //        dao.editProduct("Giay chay du lich 2","https://giaygiare.vn/upload/sanpham/nike-sb-dunk-low-eire-net-deep-orange.jpg","301","title 3",

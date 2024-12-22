@@ -35,6 +35,7 @@ public class EditProfileControl extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
+        
         HttpSession session = request.getSession();
         Account a = (Account) session.getAttribute("acc");
         int id = a.getId();
@@ -42,11 +43,12 @@ public class EditProfileControl extends HttpServlet {
         String password = request.getParameter("password");
         String email = request.getParameter("email");
         DAO dao = new DAO();
-
         dao.editProfile(username, password, email, id);
         
-        request.setAttribute("mess", "Cap nhat tai khoan thanh cong! Hay dang nhap bang tai khoan moi!");
 
+        
+        request.setAttribute("mess", "Cap nhat tai khoan thanh cong! Hay dang nhap bang tai khoan moi!");
+        
         request.getRequestDispatcher("Login.jsp").forward(request, response);
     }
 

@@ -7,17 +7,25 @@ package control;
 
 import dao.DAO;
 import entity.Account;
+import entity.Email;
+import entity.EmailUtils;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Base64;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import entity.RSAModel;
 
 
 @WebServlet(name = "SignUpControl", urlPatterns = {"/signup"})
 public class SignUpControl extends HttpServlet {
+	private RSAModel rsa = new RSAModel();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -41,9 +49,41 @@ public class SignUpControl extends HttpServlet {
             DAO dao = new DAO();
             Account a = dao.checkAccountExist(user);
             if(a == null){
-                //dc signup
-                dao.singup(user, pass, email);
-                response.sendRedirect("login");
+            	//tao key
+            	try {
+					rsa.genkey();
+					
+	            	String publicKeyBase64 = Base64.getEncoder().encodeToString(rsa.getPubkey().getEncoded());
+	            	int keyId = dao.savePublicKey(publicKeyBase64);
+	            	
+	            	if(keyId != -1) {
+		                //dc signup
+		                dao.singup(user, pass, email,keyId);
+		                System.out.println("user signup success");
+		                String pvkeyPath =  dao.savePrivateKey(rsa.getPvkey());
+		                // email private key
+		                // su dung email rieng hoac rac o day, tao app password cho vung setFromPassword
+		                Email mail = new Email();
+		                mail.setFrom("");
+		                mail.setFromPassword("");
+		                mail.setTo(email); // Recipient's email
+		                mail.setSubject("Your Private Key");
+		                mail.setAttachmentPath(pvkeyPath);
+		                mail.setContent(" ");
+		                // Send the email 
+		                EmailUtils.send(mail);
+
+		                System.out.println("Email sent successfully!");
+		                
+		                // Clean up 
+		                new File(pvkeyPath).delete();
+		                response.sendRedirect("login");
+	            	}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					System.out.println("loi save key");
+					response.sendRedirect("Login.jsp");
+				}
             }else{
                 //day ve trang login.jsp
                 response.sendRedirect("Login.jsp");

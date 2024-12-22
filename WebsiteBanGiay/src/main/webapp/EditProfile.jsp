@@ -44,8 +44,12 @@
                 <input name="password" type="password" id="password" class="form-control" value="${sessionScope.acc.pass }" required="" autofocus="">
                 <label for="email">Email</label>
                 <input name="email" type="text" id="email" class="form-control" value="${sessionScope.acc.email }" required="" autofocus="">
+     	  		<label for="publicKey">Public Key</label>
+       	 		<textarea id="publicKey" class="form-control" readonly>${sessionScope.publicKey}</textarea>
                 <button class="btn btn-success btn-block" type="submit"><i class="fas fa-sign-in-alt"></i> Edit</button> 
-            </form>
+                 <!-- Public Key (Read-Only) -->
+
+
              
 </div>
 	

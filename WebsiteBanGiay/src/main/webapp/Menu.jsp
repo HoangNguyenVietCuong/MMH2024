@@ -45,6 +45,11 @@
                         <a class="nav-link" href="EditProfile.jsp">Edit Profile</a>
                     </li>
                 </c:if>
+                <c:if test="${sessionScope.acc != null}">
+                    <li class="nav-item">
+                        <a class="nav-link" href="EditKey.jsp">Edit Key</a>
+                    </li>
+                </c:if>
                <%--  <c:if test="${sessionScope.acc.isAdmin == 1}">
                     <li class="nav-item">
                         <a class="nav-link" href="statistic">Statistic</a>
