@@ -41,12 +41,12 @@ public class HoaDonControl extends HttpServlet {
       
         DAO dao = new DAO();
       
-        
-
         double sumAllInvoice = dao.sumAllInvoice();
         
         List<Invoice> listAllInvoice = dao.getAllInvoice();
+        System.out.println(listAllInvoice);
         List<Account> listAllAccount = dao.getAllAccount();
+        System.out.println(listAllAccount);
         
         request.setAttribute("listAllInvoice", listAllInvoice);
         request.setAttribute("listAllAccount", listAllAccount);

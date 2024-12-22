@@ -1,6 +1,7 @@
 package control;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -28,20 +29,24 @@ public class OrderControl extends HttpServlet {
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		 HttpSession session = request.getSession();
+		 	// Kiểm tra đăng nhập
 	        Account a = (Account) session.getAttribute("acc");
 	        if(a == null) {
 	        	response.sendRedirect("login");
 	        	return;
 	        }
+	        // Tính tổng tiền
 	        int accountID = a.getId();
 	        DAO dao = new DAO();
 	        List<Cart> list = dao.getCartByAccountID(accountID);
 	        List<Product> list2 = dao.getAllProduct();
+	        List<Double> listMoney = new ArrayList<Double>();
 	        double totalMoney=0;
 	        for(Cart c : list) {
 				for(Product p : list2) {
 					if(c.getProductID()==p.getId()) {
 						totalMoney=totalMoney+(p.getPrice()*c.getAmount());
+						listMoney.add(p.getPrice()*c.getAmount());
 					}
 				}
 			}
@@ -81,16 +86,14 @@ public class OrderControl extends HttpServlet {
 				}
 			}
 	        
-	        dao.insertInvoice(accountID, totalMoneyVAT);
+	        dao.insertInvoice(accountID, totalMoneyVAT, list, listMoney);
 	        TongChiTieuBanHang t = dao.checkTongChiTieuBanHangExist(accountID);
 	        if(t==null) {
 	        	dao.insertTongChiTieuBanHang(accountID,totalMoneyVAT,0);
 	        }
 	        else {
 	        	dao.editTongChiTieu(accountID, totalMoneyVAT);
-	        }
-	        
-	        
+	        }     
 		request.getRequestDispatcher("DatHang.jsp").forward(request, response);
 	}
 

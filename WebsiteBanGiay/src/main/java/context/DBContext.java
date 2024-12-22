@@ -25,7 +25,6 @@ public class DBContext {
             url = "jdbc:sqlserver://"+serverName+":"+portNumber +";databaseName="+dbName;
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         Connection result = DriverManager.getConnection(url, userID, password);
-        System.out.println("Hello"+result);
         return result;
     }   
 }
