@@ -15,6 +15,7 @@ import entity.Supplier;
 //import entity.Account;
 import entity.Category;
 import entity.Invoice;
+import entity.InvoiceItem;
 import entity.Product;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -86,15 +87,40 @@ public class DAO {
             ps = conn.prepareStatement(query);
             rs = ps.executeQuery();
             while (rs.next()) {
-                list.add(new Invoice(rs.getInt(1),
+            	int invoiceId = rs.getInt(1);
+                list.add(new Invoice(invoiceId,
                         rs.getInt(2),
                         rs.getDouble(3),
-                        rs.getDate(4)
+                        rs.getDate(4),
+                        getAllItemOfInvoice(invoiceId)
                        ));
             }
         } catch (Exception e) {
+        	e.printStackTrace();
         }
         return list;
+    }
+    
+    // Lấy danh sách item trong đơn hàng
+    public List<InvoiceItem> getAllItemOfInvoice(int invoiceId){
+    	List<InvoiceItem> list = new ArrayList<>();
+    	String query = "SELECT cthd.id, cthd.productId, cthd.amount, cthd.totalPrice "
+    			+ "FROM QuanLyChiTiet qlct " 
+    			+ "JOIN ChiTietHoaDon cthd ON qlct.idChiTietHoaDon = cthd.id "
+    			+ "WHERE qlct.id = ?";
+    	try {
+            conn = new DBContext().getConnection();//mo ket noi voi sql
+            ps = conn.prepareStatement(query);
+            ps.setInt(1, invoiceId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+            	
+            	list.add(new InvoiceItem(rs.getInt("id"), rs.getInt("productId"), rs.getInt("amount"), rs.getDouble("totalPrice")));
+            }
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+    	return list;
     }
     
     public int countAllProductBySellID(int sell_ID) {
@@ -550,10 +576,12 @@ public class DAO {
 //            ps.setString(1,ngayXuat);
             rs = ps.executeQuery();
             while (rs.next()) {
-                list.add(new Invoice(rs.getInt(1),
+            	int invoiceId = rs.getInt(1);
+                list.add(new Invoice(invoiceId,
                         rs.getInt(2),
                         rs.getDouble(3),
-                        rs.getDate(4)
+                        rs.getDate(4),
+                        getAllItemOfInvoice(invoiceId)
                        ));
             }
         } catch (Exception e) {
